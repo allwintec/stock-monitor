@@ -3,21 +3,21 @@ import yfinance as yf
 import plotly.graph_objs as go
 import pandas as pd
 
-# 側邊欄：股票代碼輸入
+# 側邊欄：股票代碼與天數輸入
 stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="2317.TW")
+days = st.sidebar.number_input("輸入資料天數", min_value=1, value=30, step=1)
 
-# 改為日線資料以提高成功率
-df = yf.download(stock_symbol, period="7d", interval="1d")
+# 根據輸入的天數下載資料
+df = yf.download(stock_symbol, period=f"{days}d", interval="1d")
 
 # 防呆檢查
 if df is None or df.empty:
     st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
     st.stop()
 
-# 顯示最新股價
+# 確保 latest_price 是數值
 try:
     latest_price = df['Close'].iloc[-1] if not df['Close'].empty else None
-    latest_price = latest_price.item() if isinstance(latest_price, pd.Series) else latest_price  # 確保是單一數值
     if pd.notna(latest_price):  # 如果最新價格有效
         st.metric(label="股價", value=f"{latest_price:.2f} 元")
     else:
@@ -25,10 +25,9 @@ try:
 except Exception as e:
     st.error(f"⚠️ 發生錯誤：{e}")
 
-# 顯示最新成交量
+# 顯示成交量
 try:
     latest_volume = df['Volume'].iloc[-1] if not df['Volume'].empty else None
-    latest_volume = latest_volume.item() if isinstance(latest_volume, pd.Series) else latest_volume  # 確保是單一數值
     if pd.notna(latest_volume):  # 如果最新成交量有效
         st.metric(label="成交量", value=f"{latest_volume:.0f}")
     else:
@@ -67,12 +66,4 @@ st.info(f"🔴 壓力價：{resistance:.2f} 元")
 
 # 判斷是否突破或跌破
 try:
-    if pd.notna(latest_price):  # 確保 latest_price 有有效數值
-        if latest_price < support:
-            st.error("📉 股價跌破支撐價")
-        elif latest_price > resistance:
-            st.success("📈 股價突破壓力價")
-        else:
-            st.write("⚖️ 股價位於支撐與壓力之間")
-except Exception as e:
-    st.error(f"⚠️ 發生錯誤：{e}")
+    if pd.notna(latest_price):  # 確保 latest_price 有有效
