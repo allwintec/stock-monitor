@@ -60,11 +60,8 @@ else:
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
 
 # 確保 support 和 resistance 是單一數值
-if isinstance(support, pd.Series):
-    support = support.item()  # 將 Series 轉換為單一數值
-
-if isinstance(resistance, pd.Series):
-    resistance = resistance.item()  # 將 Series 轉換為單一數值
+support = float(support) if isinstance(support, pd.Series) else support  # 將 Series 轉為 float
+resistance = float(resistance) if isinstance(resistance, pd.Series) else resistance  # 同上
 
 # 顯示支撐價和壓力價
 st.info(f"🔵 支撐價：{support:.2f} 元")
