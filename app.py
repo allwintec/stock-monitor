@@ -4,7 +4,7 @@ import plotly.graph_objs as go
 import pandas as pd
 
 # 側邊欄：股票代碼輸入
-stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="3491.TW")
+stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="2317.TW")
 
 # 改為日線資料以提高成功率
 df = yf.download(stock_symbol, period="7d", interval="1d")
@@ -15,23 +15,18 @@ if df is None or df.empty:
     st.stop()
 
 # 確保 latest_price 是數值
-latest_price = df['Close'].iloc[-1] if not df['Close'].empty else None
-latest_volume = df['Volume'].iloc[-1]
-
-# 顯示標題與即時資訊
-st.title(f"{stock_symbol} 股價監控")
-
-st.subheader("📈 最新價格資訊")
-
-# 確保 latest_price 是有效數字
-if latest_price is not None:
-    if pd.notna(latest_price):
+try:
+    latest_price = df['Close'].iloc[-1]
+    if pd.notna(latest_price):  # 如果最新價格有效
         st.metric(label="股價", value=f"{latest_price:.2f} 元")
     else:
-        st.warning("⚠️ 無法顯示股價（資料尚未更新）")
-else:
-    st.warning("⚠️ 無法顯示股價（資料為空）")
+        st.warning("⚠️ 無法顯示股價（資料為空）")
+except Exception as e:
+    st.error(f"⚠️ 發生錯誤：{e}")
 
+latest_volume = df['Volume'].iloc[-1]
+
+# 顯示成交量
 if pd.notna(latest_volume):
     st.metric(label="成交量", value=f"{latest_volume:.0f}")
 else:
@@ -65,7 +60,7 @@ st.info(f"🔵 支撐價：{support} 元")
 st.info(f"🔴 壓力價：{resistance} 元")
 
 # 判斷是否突破或跌破
-if latest_price is not None:
+if pd.notna(latest_price):
     if latest_price < support:
         st.error("📉 股價跌破支撐價")
     elif latest_price > resistance:
