@@ -66,15 +66,4 @@ if isinstance(support, pd.Series):
 if isinstance(resistance, pd.Series):
     resistance = resistance.item()  # 將 Series 轉換為單一數值
 
-# 顯示支撐價和壓力價
-st.info(f"🔵 支撐價：{support:.2f} 元")
-st.info(f"🔴 壓力價：{resistance:.2f} 元")
-
-# 判斷是否突破或跌破
-if pd.notna(latest_price):
-    if latest_price < support:
-        st.error("📉 股價跌破支撐價")
-    elif latest_price > resistance:
-        st.success("📈 股價突破壓力價")
-    else:
-        st.write("⚖️ 股價位於支撐與壓力之間")
+# 顯示支撐價
