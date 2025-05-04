@@ -16,6 +16,11 @@ if df is None or df.empty:
     st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
     st.stop()
 
+# 確保數據列名存在
+if 'Close' not in df.columns or 'Volume' not in df.columns:
+    st.error("⚠️ 資料中缺少所需的 'Close' 或 'Volume' 列，無法顯示圖表")
+    st.stop()
+
 # 顯示最新股價
 try:
     latest_price = float(df['Close'].iloc[-1])  # 取得最新的收盤價
@@ -32,7 +37,10 @@ except Exception as e:
 
 # 顯示股價和成交量折線圖
 st.subheader("📊 股價與成交量變化")
-st.line_chart(df[['Close', 'Volume']])
+try:
+    st.line_chart(df[['Close', 'Volume']])
+except Exception as e:
+    st.error(f"⚠️ 顯示圖表時發生錯誤：{e}")
 
 # 顯示支撐價和壓力價設定
 st.sidebar.subheader("支撐/壓力價設定")
