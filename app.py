@@ -57,8 +57,8 @@ st.sidebar.subheader("支撐/壓力價設定")
 mode = st.sidebar.radio("模式", ["系統建議", "手動設定"])
 
 if mode == "系統建議":
-    support = float(df['Low'].rolling(3).mean().values[-1])  # 取得最近的支撐價
-    resistance = float(df['High'].rolling(3).mean().values[-1])  # 取得最近的壓力價
+    support = float(df['Low'].rolling(3).mean().iloc[-1])  # 取得最近的支撐價
+    resistance = float(df['High'].rolling(3).mean().iloc[-1])  # 取得最近的壓力價
 else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
