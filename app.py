@@ -52,14 +52,16 @@ st.sidebar.subheader("支撐/壓力價設定")
 mode = st.sidebar.radio("模式", ["系統建議", "手動設定"])
 
 if mode == "系統建議":
-    support = round(df['Low'].rolling(3).mean().iloc[-1], 2)
-    resistance = round(df['High'].rolling(3).mean().iloc[-1], 2)
+    # 使用 .iloc 取得單一數值，避免產生 Series
+    support = df['Low'].rolling(3).mean().iloc[-1]  # 使用 .iloc[-1] 確保是單一數值
+    resistance = df['High'].rolling(3).mean().iloc[-1]  # 同上
 else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
 
-st.info(f"🔵 支撐價：{support} 元")
-st.info(f"🔴 壓力價：{resistance} 元")
+# 顯示支撐價和壓力價
+st.info(f"🔵 支撐價：{support:.2f} 元")
+st.info(f"🔴 壓力價：{resistance:.2f} 元")
 
 # 判斷是否突破或跌破
 if pd.notna(latest_price):
