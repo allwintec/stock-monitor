@@ -18,10 +18,12 @@ try:
 
         # 確保 latest_price 是數值
         latest_price = df['Close'].iloc[-1]  # 使用 iloc 確保獲取正確的數值
-        st.write(f"latest_price 的值：{latest_price}")  # 顯示最新的股價資料
+        latest_price_value = latest_price.values[0] if isinstance(latest_price, pd.Series) else latest_price
+        
+        st.write(f"latest_price 的值：{latest_price_value}")  # 顯示最新的股價資料
 
-        if isinstance(latest_price, (int, float)):  # 確保是數值
-            st.metric(label="股價", value=f"{latest_price:.2f} 元")
+        if isinstance(latest_price_value, (int, float)):  # 確保是數值
+            st.metric(label="股價", value=f"{latest_price_value:.2f} 元")
         else:
             st.warning("⚠️ 股價資料無法顯示")
 except Exception as e:
