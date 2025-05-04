@@ -1,5 +1,6 @@
 import streamlit as st
 import yfinance as yf
+import pandas as pd  # 加入這行來匯入 pandas
 
 # 側邊欄：股票代碼輸入
 stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="2317.TW")
