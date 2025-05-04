@@ -18,7 +18,7 @@ if df is None or df.empty:
 # 確保 latest_price 是數值
 try:
     latest_price = df['Close'].iloc[-1] if not df['Close'].empty else None
-    if pd.notna(latest_price):  # 如果最新價格有效
+    if latest_price is not None and pd.notna(latest_price):  # 如果最新價格有效
         st.metric(label="股價", value=f"{latest_price:.2f} 元")
     else:
         st.warning("⚠️ 無法顯示股價（資料為空）")
@@ -28,7 +28,7 @@ except Exception as e:
 # 顯示成交量
 try:
     latest_volume = df['Volume'].iloc[-1] if not df['Volume'].empty else None
-    if pd.notna(latest_volume):  # 如果最新成交量有效
+    if latest_volume is not None and pd.notna(latest_volume):  # 如果最新成交量有效
         st.metric(label="成交量", value=f"{latest_volume:.0f}")
     else:
         st.warning("⚠️ 無法顯示成交量（資料尚未更新）")
@@ -66,7 +66,7 @@ st.info(f"🔴 壓力價：{resistance:.2f} 元")
 
 # 判斷是否突破或跌破
 try:
-    if pd.notna(latest_price):  # 確保 latest_price 有有效數值
+    if latest_price is not None and pd.notna(latest_price):  # 確保 latest_price 有有效數值
         if latest_price < support:
             st.error("📉 股價跌破支撐價")
         elif latest_price > resistance:
