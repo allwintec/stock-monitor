@@ -66,4 +66,12 @@ st.info(f"🔴 壓力價：{resistance:.2f} 元")
 
 # 判斷是否突破或跌破
 try:
-    if pd.notna(latest_price):  # 確保 latest_price 有有效
+    if pd.notna(latest_price):  # 確保 latest_price 有有效數值
+        if latest_price < support:
+            st.error("📉 股價跌破支撐價")
+        elif latest_price > resistance:
+            st.success("📈 股價突破壓力價")
+        else:
+            st.write("⚖️ 股價位於支撐與壓力之間")
+except Exception as e:
+    st.error(f"⚠️ 發生錯誤：{e}")
