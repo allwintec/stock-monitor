@@ -1,87 +1,46 @@
 import streamlit as st
 import yfinance as yf
-import plotly.graph_objs as go
 import pandas as pd
+import plotly.express as px
 
-# 側邊欄：股票代碼與天數輸入
+# 股票代碼輸入
 stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="2317.TW")
-days = st.sidebar.number_input("輸入資料天數", min_value=1, value=3, step=1)
+days = st.sidebar.number_input("輸入要查詢的天數", min_value=1, max_value=60, value=10, step=1)
 
-# 下載股票資料
+# 股票名稱對照表（可擴充）
+stock_names = {
+    "2317.TW": "鴻海",
+    "2330.TW": "台積電",
+    "3481.TW": "群創",
+    "0050.TW": "元大台灣50"
+}
+
+# 抓取資料（1 天為單位）
 df = yf.download(stock_symbol, period=f"{days}d", interval="1d")
 
-# 防呆檢查
-if df is None or df.empty:
+# 檢查資料
+if df.empty:
     st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
     st.stop()
 
-# 顯示股票名稱
-stock_info = yf.Ticker(stock_symbol).info
-stock_name = stock_info.get('shortName', '未知股票')  # 預設為 '未知股票'，如果沒有找到名稱
-st.sidebar.subheader(f"股票名稱：{stock_name}")
+# 顯示中文股票名稱
+stock_name = stock_names.get(stock_symbol, "未知股票")
+st.subheader(f"{stock_name}（{stock_symbol}） 的 {days} 天股價與成交量")
 
-# 顯示資料內容
-st.write("資料內容：", df.tail())
+# 最新股價與成交量
+latest_price = df['Close'].iloc[-1]
+latest_volume = df['Volume'].iloc[-1]
+st.metric(label="最新股價", value=f"{latest_price:.2f} 元")
+st.metric(label="最新成交量", value=f"{latest_volume:.0f}")
 
-# 顯示 K 線圖
-st.subheader("📊 K線圖")
-fig = go.Figure()
-fig.add_trace(go.Candlestick(
-    x=df.index,
-    open=df['Open'],
-    high=df['High'],
-    low=df['Low'],
-    close=df['Close'],
-    name='K線'))
-fig.update_layout(xaxis_rangeslider_visible=False)
-st.plotly_chart(fig)
+# 顯示折線圖 - 收盤價
+fig_price = px.line(df, x=df.index, y="Close", title="收盤價走勢")
+st.plotly_chart(fig_price)
 
-# 顯示股價與成交量
-try:
-    latest_price = df['Close'].values[-1] if not df['Close'].empty else None
-    if latest_price is not None:  # 如果最新價格有效
-        st.metric(label="股價", value=f"{latest_price:.2f} 元")
-    else:
-        st.warning("⚠️ 無法顯示股價（資料為空）")
-except Exception as e:
-    st.error(f"⚠️ 發生錯誤：{e}")
+# 顯示折線圖 - 成交量
+fig_volume = px.line(df, x=df.index, y="Volume", title="成交量走勢")
+st.plotly_chart(fig_volume)
 
-# 顯示成交量
-try:
-    latest_volume = df['Volume'].values[-1] if not df['Volume'].empty else None
-    if latest_volume is not None:  # 如果最新成交量有效
-        st.metric(label="成交量", value=f"{latest_volume:.0f}")
-    else:
-        st.warning("⚠️ 無法顯示成交量（資料尚未更新）")
-except Exception as e:
-    st.error(f"⚠️ 發生錯誤：{e}")
-
-# 側邊欄：支撐/壓力價設定
-st.sidebar.subheader("支撐/壓力價設定")
-mode = st.sidebar.radio("模式", ["系統建議", "手動設定"])
-
-if mode == "系統建議":
-    # 使用 rolling() 並強制選取最後的有效數值
-    support = df['Low'].rolling(3).mean().iloc[-1]  # 取得最近的支撐價
-    resistance = df['High'].rolling(3).mean().iloc[-1]  # 取得最近的壓力價
-    support = float(support)  # 強制轉換為 float
-    resistance = float(resistance)  # 強制轉換為 float
-else:
-    support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
-    resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
-
-# 顯示支撐價和壓力價
-st.info(f"🔵 支撐價：{support:.2f} 元")
-st.info(f"🔴 壓力價：{resistance:.2f} 元")
-
-# 判斷是否突破或跌破
-try:
-    if latest_price is not None:  # 確保 latest_price 有有效數值
-        if latest_price < support:
-            st.error("📉 股價跌破支撐價")
-        elif latest_price > resistance:
-            st.success("📈 股價突破壓力價")
-        else:
-            st.write("⚖️ 股價位於支撐與壓力之間")
-except Exception as e:
-    st.error(f"⚠️ 發生錯誤：{e}")
+# 顯示表格
+st.subheader("詳細數據")
+st.dataframe(df[['Open', 'High', 'Low', 'Close', 'Volume']].round(2))
