@@ -2,7 +2,6 @@ import streamlit as st
 import yfinance as yf
 import plotly.graph_objs as go
 import pandas as pd
-import math
 
 # 側邊欄：股票代碼輸入
 stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="3491.TW")
@@ -23,12 +22,14 @@ latest_volume = df['Volume'].iloc[-1]
 st.title(f"{stock_symbol} 股價監控")
 
 st.subheader("📈 最新價格資訊")
-if not math.isnan(latest_price):
+
+# 使用 pd.notna() 確保不是 NaN 才顯示
+if pd.notna(latest_price):
     st.metric(label="股價", value=f"{latest_price:.2f} 元")
 else:
     st.warning("⚠️ 無法顯示股價（資料尚未更新）")
 
-if not math.isnan(latest_volume):
+if pd.notna(latest_volume):
     st.metric(label="成交量", value=f"{latest_volume:.0f}")
 else:
     st.warning("⚠️ 無法顯示成交量（資料尚未更新）")
@@ -55,4 +56,16 @@ if mode == "系統建議":
     resistance = round(df['High'].rolling(3).mean().iloc[-1], 2)
 else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
-    resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390)
+    resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
+
+st.info(f"🔵 支撐價：{support} 元")
+st.info(f"🔴 壓力價：{resistance} 元")
+
+# 判斷是否突破或跌破
+if pd.notna(latest_price):
+    if latest_price < support:
+        st.error("📉 股價跌破支撐價")
+    elif latest_price > resistance:
+        st.success("📈 股價突破壓力價")
+    else:
+        st.write("⚖️ 股價位於支撐與壓力之間")
