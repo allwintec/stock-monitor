@@ -16,7 +16,7 @@ if df is None or df.empty:
 
 # 確保 latest_price 是數值
 try:
-    latest_price = df['Close'].iloc[-1]
+    latest_price = df['Close'].iloc[-1] if not df['Close'].empty else None
     if pd.notna(latest_price):  # 如果最新價格有效
         st.metric(label="股價", value=f"{latest_price:.2f} 元")
     else:
@@ -24,13 +24,15 @@ try:
 except Exception as e:
     st.error(f"⚠️ 發生錯誤：{e}")
 
-latest_volume = df['Volume'].iloc[-1]
-
-# 顯示成交量
-if pd.notna(latest_volume):
-    st.metric(label="成交量", value=f"{latest_volume:.0f}")
-else:
-    st.warning("⚠️ 無法顯示成交量（資料尚未更新）")
+# 確保 latest_volume 是數值
+try:
+    latest_volume = df['Volume'].iloc[-1] if not df['Volume'].empty else None
+    if pd.notna(latest_volume):  # 如果最新成交量有效
+        st.metric(label="成交量", value=f"{latest_volume:.0f}")
+    else:
+        st.warning("⚠️ 無法顯示成交量（資料尚未更新）")
+except Exception as e:
+    st.error(f"⚠️ 發生錯誤：{e}")
 
 # 顯示 K 線圖
 st.subheader("📊 K線圖")
