@@ -2,19 +2,26 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 
-# 側邊欄：股票代碼輸入
+# 輸入股票代碼
 stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="2317.TW")
 
 # 手動設定天數
 days = st.sidebar.number_input("天數", min_value=1, max_value=365, value=5)
 
 # 取得股票資料
-df = yf.download(stock_symbol, period=f"{days}d", interval="1d")
+ticker = yf.Ticker(stock_symbol)
+df = ticker.history(period=f"{days}d", interval="1d")
+
+# 取得股票名稱
+stock_name = ticker.info['longName'] if 'longName' in ticker.info else stock_symbol
 
 # 防呆檢查
 if df is None or df.empty:
     st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
     st.stop()
+
+# 顯示股票名稱
+st.subheader(f"{stock_name}（{stock_symbol}）")
 
 # 確保數據列名存在
 if 'Close' not in df.columns or 'Volume' not in df.columns:
