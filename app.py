@@ -24,7 +24,7 @@ try:
 except Exception as e:
     st.error(f"⚠️ 發生錯誤：{e}")
 
-# 確保 latest_volume 是數值
+# 顯示成交量
 try:
     latest_volume = df['Volume'].iloc[-1] if not df['Volume'].empty else None
     if pd.notna(latest_volume):  # 如果最新成交量有效
@@ -52,15 +52,15 @@ st.sidebar.subheader("支撐/壓力價設定")
 mode = st.sidebar.radio("模式", ["系統建議", "手動設定"])
 
 if mode == "系統建議":
-    # 使用 .iloc[-1] 提取最終單一數值，避免產生 Series
-    support = df['Low'].rolling(3).mean().iloc[-1]  # 使用 .iloc[-1] 確保是單一數值
-    resistance = df['High'].rolling(3).mean().iloc[-1]  # 同上
+    # 使用 rolling() 並確保選取最後的數值
+    support = df['Low'].rolling(3).mean().iloc[-1]  # 取得最近的支撐價
+    resistance = df['High'].rolling(3).mean().iloc[-1]  # 取得最近的壓力價
 else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
 
-# 確保 support 和 resistance 是單一數值
-support = float(support) if isinstance(support, pd.Series) else support  # 將 Series 轉為 float
+# 確保 support 和 resistance 是數值型別
+support = float(support) if isinstance(support, pd.Series) else support  # 如果是 Series 轉為數值
 resistance = float(resistance) if isinstance(resistance, pd.Series) else resistance  # 同上
 
 # 顯示支撐價和壓力價
