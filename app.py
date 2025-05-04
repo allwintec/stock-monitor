@@ -17,7 +17,7 @@ try:
         st.write(df)  # 顯示資料表格
 
         # 確保 latest_price 是數值
-        latest_price = df['Close'].iloc[-1]
+        latest_price = df['Close'].iloc[-1]  # 使用 iloc 確保獲取正確的數值
         st.write(f"latest_price 的值：{latest_price}")  # 顯示最新的股價資料
 
         if isinstance(latest_price, (int, float)):  # 確保是數值
