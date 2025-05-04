@@ -23,11 +23,14 @@ st.title(f"{stock_symbol} 股價監控")
 
 st.subheader("📈 最新價格資訊")
 
-# 使用 pd.notna() 確保是有效數字
-if pd.notna(latest_price):
-    st.metric(label="股價", value=f"{latest_price:.2f} 元")
+# 確保 latest_price 是有效數字
+if latest_price is not None:
+    if pd.notna(latest_price):
+        st.metric(label="股價", value=f"{latest_price:.2f} 元")
+    else:
+        st.warning("⚠️ 無法顯示股價（資料尚未更新）")
 else:
-    st.warning("⚠️ 無法顯示股價（資料尚未更新）")
+    st.warning("⚠️ 無法顯示股價（資料為空）")
 
 if pd.notna(latest_volume):
     st.metric(label="成交量", value=f"{latest_volume:.0f}")
@@ -62,7 +65,7 @@ st.info(f"🔵 支撐價：{support} 元")
 st.info(f"🔴 壓力價：{resistance} 元")
 
 # 判斷是否突破或跌破
-if pd.notna(latest_price):
+if latest_price is not None:
     if latest_price < support:
         st.error("📉 股價跌破支撐價")
     elif latest_price > resistance:
