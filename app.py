@@ -14,8 +14,8 @@ if df is None or df.empty:
     st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
     st.stop()
 
-# 取得最新價格與成交量
-latest_price = df['Close'].iloc[-1]
+# 確保 latest_price 是數值
+latest_price = df['Close'].iloc[-1] if not df['Close'].empty else None
 latest_volume = df['Volume'].iloc[-1]
 
 # 顯示標題與即時資訊
@@ -23,7 +23,7 @@ st.title(f"{stock_symbol} 股價監控")
 
 st.subheader("📈 最新價格資訊")
 
-# 使用 pd.notna() 確保不是 NaN 才顯示
+# 使用 pd.notna() 確保是有效數字
 if pd.notna(latest_price):
     st.metric(label="股價", value=f"{latest_price:.2f} 元")
 else:
