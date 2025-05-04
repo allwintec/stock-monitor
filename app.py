@@ -55,4 +55,4 @@ if mode == "系統建議":
     resistance = round(df['High'].rolling(3).mean().iloc[-1], 2)
 else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
-    resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390
+    resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390)
