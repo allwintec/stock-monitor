@@ -59,7 +59,7 @@ else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
 
-# 檢查 support 和 resistance 是否為 Series，並確保它們是數值
+# 確保 support 和 resistance 是單一數值
 if isinstance(support, pd.Series):
     support = support.item()  # 將 Series 轉換為單一數值
 
