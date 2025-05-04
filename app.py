@@ -10,6 +10,7 @@ def get_stock_data(symbol, period="7d", interval="1d"):
         if df.empty:
             st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
             return None
+        st.write("成功載入股市資料")  # 確認資料是否成功
         return df
     except Exception as e:
         st.error(f"⚠️ 發生錯誤：{e}")
@@ -21,6 +22,7 @@ stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="2
 # 取得股市資料
 df = get_stock_data(stock_symbol)
 
+# 若資料無法載入，停止執行
 if df is None:
     st.stop()
 
@@ -69,32 +71,8 @@ mode = st.sidebar.radio("模式", ["系統建議", "手動設定"])
 
 # 計算支撐和壓力價
 def calculate_support_resistance(df, mode):
-    if mode == "系統建議":
-        # 使用 rolling() 並強制轉為 float
-        support = float(df['Low'].rolling(3).mean().iloc[-1])
-        resistance = float(df['High'].rolling(3).mean().iloc[-1])
-    else:
-        support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
-        resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
-    return support, resistance
-
-support, resistance = calculate_support_resistance(df, mode)
-
-# 顯示支撐價和壓力價
-st.info(f"🔵 支撐價：{support:.2f} 元")
-st.info(f"🔴 壓力價：{resistance:.2f} 元")
-
-# 判斷是否突破或跌破
-def check_price_status(latest_price, support, resistance):
     try:
-        if pd.notna(latest_price):  # 確保 latest_price 有有效數值
-            if latest_price < support:
-                st.error("📉 股價跌破支撐價")
-            elif latest_price > resistance:
-                st.success("📈 股價突破壓力價")
-            else:
-                st.write("⚖️ 股價位於支撐與壓力之間")
-    except Exception as e:
-        st.error(f"⚠️ 發生錯誤：{e}")
-
-check_price_status(df['Close'].iloc[-1], support, resistance)
+        if mode == "系統建議":
+            # 使用 rolling() 並強制轉為 float
+            support = float(df['Low'].rolling(3).mean().iloc[-1])
+            resistance = float
