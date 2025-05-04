@@ -7,7 +7,7 @@ import pandas as pd
 stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="2317.TW")
 days = st.sidebar.number_input("輸入資料天數", min_value=1, value=3, step=1)
 
-# 根據輸入的天數下載資料
+# 下載股票資料
 df = yf.download(stock_symbol, period=f"{days}d", interval="1d")
 
 # 防呆檢查
@@ -15,30 +15,30 @@ if df is None or df.empty:
     st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
     st.stop()
 
-# 確保資料是正確的
+# 顯示股票名稱
+stock_info = yf.Ticker(stock_symbol).info
+stock_name = stock_info.get('shortName', '未知股票')  # 預設為 '未知股票'，如果沒有找到名稱
+st.sidebar.subheader(f"股票名稱：{stock_name}")
+
+# 顯示資料內容
 st.write("資料內容：", df.tail())
 
-# 檢查資料行數
-if len(df) < 2:
-    st.warning("⚠️ 資料過少，無法顯示 K 線圖，請增加資料天數。")
-else:
-    # 顯示 K 線圖
-    st.subheader("📊 K線圖")
-    fig = go.Figure()
-    fig.add_trace(go.Candlestick(
-        x=df.index,
-        open=df['Open'],
-        high=df['High'],
-        low=df['Low'],
-        close=df['Close'],
-        name='K線'))
-    fig.update_layout(xaxis_rangeslider_visible=False)
-    st.plotly_chart(fig)
+# 顯示 K 線圖
+st.subheader("📊 K線圖")
+fig = go.Figure()
+fig.add_trace(go.Candlestick(
+    x=df.index,
+    open=df['Open'],
+    high=df['High'],
+    low=df['Low'],
+    close=df['Close'],
+    name='K線'))
+fig.update_layout(xaxis_rangeslider_visible=False)
+st.plotly_chart(fig)
 
-# 確保 latest_price 是數值
+# 顯示股價與成交量
 try:
     latest_price = df['Close'].values[-1] if not df['Close'].empty else None
-    st.write("latest_price 的值：", latest_price)  # 打印出 latest_price
     if latest_price is not None:  # 如果最新價格有效
         st.metric(label="股價", value=f"{latest_price:.2f} 元")
     else:
