@@ -1,54 +1,58 @@
 import streamlit as st
 import yfinance as yf
 import plotly.graph_objs as go
-import numpy as np
 
-# 設定股市代碼（如昇達科）
-stock_symbol = "3491.TW"
+# 側邊欄：股票代碼輸入
+stock_symbol = st.sidebar.text_input("輸入股票代碼（加 .TW）", value="3491.TW")
 
-# 查詢資料
+# 下載資料
 df = yf.download(stock_symbol, period="5d", interval="1m")
 
-# 顯示股價
-st.title(f"{stock_symbol} 即時股價監控")
+# ✅ 正確的防呆檢查（變數名稱 df）
+if df is None or df.empty:
+    st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
+    st.stop()
 
-# 顯示最近價格與成交量
+# 顯示標題與即時資訊
+st.title(f"{stock_symbol} 即時股價監控")
 latest_price = df['Close'].iloc[-1]
 latest_volume = df['Volume'].iloc[-1]
 
-st.subheader("即時股價與成交量")
-st.write(f"最新股價: {latest_price:.2f} 元")
-st.write(f"最新成交量: {latest_volume}")
+st.subheader("📈 最新價格資訊")
+st.metric(label="股價", value=f"{latest_price:.2f} 元")
+st.metric(label="成交量", value=f"{latest_volume:.0f}")
 
-# 顯示K線圖與成交量圖
+# 顯示 K 線圖
+st.subheader("📊 K線圖")
 fig = go.Figure()
-
-fig.add_trace(go.Candlestick(x=df.index,
-                             open=df['Open'],
-                             high=df['High'],
-                             low=df['Low'],
-                             close=df['Close'],
-                             name="K線"))
-
-fig.update_layout(title=f"{stock_symbol} K線圖",
-                  xaxis_title="日期",
-                  yaxis_title="股價")
+fig.add_trace(go.Candlestick(
+    x=df.index,
+    open=df['Open'],
+    high=df['High'],
+    low=df['Low'],
+    close=df['Close'],
+    name='K線'))
+fig.update_layout(xaxis_rangeslider_visible=False)
 st.plotly_chart(fig)
 
-# 手動或系統設定支撐/壓力價
-st.sidebar.title("支撐/壓力價設置")
-support = st.sidebar.number_input("支撐價（元）", min_value=0, value=370)
-resistance = st.sidebar.number_input("壓力價（元）", min_value=0, value=390)
+# 側邊欄：支撐/壓力設定
+st.sidebar.subheader("支撐/壓力價設定")
+mode = st.sidebar.radio("模式", ["系統建議", "手動設定"])
 
-st.write(f"設定支撐價: {support} 元")
-st.write(f"設定壓力價: {resistance} 元")
+if mode == "系統建議":
+    support = round(df['Low'].rolling(5).mean().iloc[-1], 2)
+    resistance = round(df['High'].rolling(5).mean().iloc[-1], 2)
+else:
+    support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
+    resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
 
-# 比較是否突破支撐或壓力
+st.info(f"支撐價：{support} 元")
+st.info(f"壓力價：{resistance} 元")
+
+# 判斷是否突破或跌破
 if latest_price < support:
-    st.warning(f"股價突破支撐: {support} 元！")
-if latest_price > resistance:
-    st.success(f"股價突破壓力: {resistance} 元！")
-
-# 模擬發送LINE通知
-if latest_price < support or latest_price > resistance:
-    st.write("發送 LINE 通知...")
+    st.error("⚠️ 股價跌破支撐價")
+elif latest_price > resistance:
+    st.success("🚀 股價突破壓力價")
+else:
+    st.write("價格尚在支撐／壓力區間內")
