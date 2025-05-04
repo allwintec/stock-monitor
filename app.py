@@ -17,6 +17,7 @@ if df is None or df.empty:
 # 顯示最新股價
 try:
     latest_price = df['Close'].iloc[-1] if not df['Close'].empty else None
+    latest_price = latest_price.item() if isinstance(latest_price, pd.Series) else latest_price  # 確保是單一數值
     if pd.notna(latest_price):  # 如果最新價格有效
         st.metric(label="股價", value=f"{latest_price:.2f} 元")
     else:
@@ -27,6 +28,7 @@ except Exception as e:
 # 顯示最新成交量
 try:
     latest_volume = df['Volume'].iloc[-1] if not df['Volume'].empty else None
+    latest_volume = latest_volume.item() if isinstance(latest_volume, pd.Series) else latest_volume  # 確保是單一數值
     if pd.notna(latest_volume):  # 如果最新成交量有效
         st.metric(label="成交量", value=f"{latest_volume:.0f}")
     else:
