@@ -64,14 +64,11 @@ if mode == "系統建議":
     # 使用 rolling() 並強制選取最後的有效數值
     support = df['Low'].rolling(3).mean().iloc[-1]  # 取得最近的支撐價
     resistance = df['High'].rolling(3).mean().iloc[-1]  # 取得最近的壓力價
-    st.write("支撐價計算過程：", df['Low'].rolling(3).mean())  # 打印出 rolling 計算結果
+    support = float(support)  # 強制轉換為 float
+    resistance = float(resistance)  # 強制轉換為 float
 else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
-
-# 確保支撐/壓力價是數值
-support = float(support) if not isinstance(support, float) else support
-resistance = float(resistance) if not isinstance(resistance, float) else resistance
 
 # 顯示支撐價和壓力價
 st.info(f"🔵 支撐價：{support:.2f} 元")
