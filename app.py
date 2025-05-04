@@ -15,6 +15,9 @@ if df is None or df.empty:
     st.error("⚠️ 無法取得資料，請確認股票代碼是否正確，或稍後再試。")
     st.stop()
 
+# 確保資料是正確的
+st.write("資料內容：", df.tail())
+
 # 檢查資料行數
 if len(df) < 2:
     st.warning("⚠️ 資料過少，無法顯示 K 線圖，請增加資料天數。")
@@ -35,6 +38,7 @@ else:
 # 確保 latest_price 是數值
 try:
     latest_price = df['Close'].values[-1] if not df['Close'].empty else None
+    st.write("latest_price 的值：", latest_price)  # 打印出 latest_price
     if latest_price is not None:  # 如果最新價格有效
         st.metric(label="股價", value=f"{latest_price:.2f} 元")
     else:
@@ -57,8 +61,10 @@ st.sidebar.subheader("支撐/壓力價設定")
 mode = st.sidebar.radio("模式", ["系統建議", "手動設定"])
 
 if mode == "系統建議":
-    support = float(df['Low'].rolling(3).mean().iloc[-1])  # 取得最近的支撐價
-    resistance = float(df['High'].rolling(3).mean().iloc[-1])  # 取得最近的壓力價
+    # 使用 rolling() 並強制選取最後的有效數值
+    support = df['Low'].rolling(3).mean().iloc[-1]  # 取得最近的支撐價
+    resistance = df['High'].rolling(3).mean().iloc[-1]  # 取得最近的壓力價
+    st.write("支撐價計算過程：", df['Low'].rolling(3).mean())  # 打印出 rolling 計算結果
 else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
