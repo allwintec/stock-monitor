@@ -21,12 +21,20 @@ st.subheader(f"📊 {stock_symbol} 最近 {days} 天股價與成交量")
 st.dataframe(df[['Close', 'Volume']])
 
 # 顯示最新股價
-latest_price = df['Close'].iloc[-1]
-st.metric(label="最新股價", value=f"{latest_price:.2f} 元")
+latest_price = df['Close'].iloc[-1] if not df['Close'].empty else None
+
+# 確保最新股價是數字類型
+if latest_price is not None and isinstance(latest_price, (int, float)):
+    st.metric(label="最新股價", value=f"{latest_price:.2f} 元")
+else:
+    st.error("⚠️ 無法顯示最新股價")
 
 # 顯示最新成交量
-latest_volume = df['Volume'].iloc[-1]
-st.metric(label="最新成交量", value=f"{latest_volume:.0f}")
+latest_volume = df['Volume'].iloc[-1] if not df['Volume'].empty else None
+if latest_volume is not None:
+    st.metric(label="最新成交量", value=f"{latest_volume:.0f}")
+else:
+    st.error("⚠️ 無法顯示最新成交量")
 
 # 支撐/壓力價設定
 st.sidebar.subheader("支撐/壓力價設定")
