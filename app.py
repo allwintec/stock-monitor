@@ -59,4 +59,22 @@ else:
     support = st.sidebar.number_input("支撐價", min_value=0.0, value=370.0)
     resistance = st.sidebar.number_input("壓力價", min_value=0.0, value=390.0)
 
-# 檢
+# 檢查 support 和 resistance 是否為 Series，並確保它們是數值
+if isinstance(support, pd.Series):
+    support = support.item()  # 將 Series 轉換為單一數值
+
+if isinstance(resistance, pd.Series):
+    resistance = resistance.item()  # 將 Series 轉換為單一數值
+
+# 顯示支撐價和壓力價
+st.info(f"🔵 支撐價：{support:.2f} 元")
+st.info(f"🔴 壓力價：{resistance:.2f} 元")
+
+# 判斷是否突破或跌破
+if pd.notna(latest_price):
+    if latest_price < support:
+        st.error("📉 股價跌破支撐價")
+    elif latest_price > resistance:
+        st.success("📈 股價突破壓力價")
+    else:
+        st.write("⚖️ 股價位於支撐與壓力之間")
